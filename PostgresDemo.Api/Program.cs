@@ -7,7 +7,10 @@ using PostgresDemo.Library.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-Env.Load();
+var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\");
+var envPath = Path.Combine(solutionRoot, ".env");
+
+Env.Load(envPath);
 
 var connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
 
