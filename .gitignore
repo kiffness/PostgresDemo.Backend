@@ -3,10 +3,19 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-# dotenv files
+# Built outputs
+bin/
+obj/
+
+
+# local secrets
 .env
+appsettings.Development.json
 
 # User-specific files
+*.ide*
+.vs/
+.idea/
 *.rsuser
 *.suo
 *.user
