@@ -9,16 +9,22 @@ public class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        // Compute path to solution root
+        // Compute path to the solution root (adjust depth as needed)
         var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..");
-        var envPath = Path.Combine(solutionRoot, ".env");
 
-        DotNetEnv.Env.Load(envPath);
+        // Build the database path — store it under your main solution folder
+        var dbPath = Path.GetFullPath(Path.Combine(solutionRoot, "PostgresDemo", "todo.db"));
+        
+        var dbDir = Path.GetDirectoryName(dbPath);
+        if (!Directory.Exists(dbDir))
+        {
+            Directory.CreateDirectory(dbDir!);
+        }
 
-        var connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION")
-                               ?? "Host=localhost;Database=postgres_demo;Username=postgres;Password=fallback";
+        // Use Sqlite connection string
+        var connectionString = $"Data Source={dbPath}";
 
-        optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseSqlite(connectionString);
 
         return new AppDbContext(optionsBuilder.Options);
     }

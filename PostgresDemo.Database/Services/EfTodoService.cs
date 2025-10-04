@@ -1,4 +1,5 @@
-﻿using PostgresDemo.Database.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using PostgresDemo.Database.Data;
 using PostgresDemo.Library.Commands;
 using PostgresDemo.Library.Enums;
 using PostgresDemo.Library.Interfaces;
@@ -9,6 +10,13 @@ namespace PostgresDemo.Database.Services;
 
 public class EfTodoService(AppDbContext db) : ITodoService
 {
+    public async Task<Result<List<TodoItem>>> GetAllAsync(CancellationToken ct)
+    {
+        var todos = await db.TodoItems.ToListAsync();
+        
+        return Result<List<TodoItem>>.Ok(todos);
+    }
+
     public async Task<Result<TodoItem>> GetAsync(int id, CancellationToken ct)
     {
         var todo = await db.TodoItems.FindAsync(new object[] { id }, ct);
@@ -21,6 +29,9 @@ public class EfTodoService(AppDbContext db) : ITodoService
 
     public async Task<Result<TodoItem>> CreateAsync(CreateTodoCommand command, CancellationToken ct)
     {
+        if (command.Title == "error") // special test trigger
+            return Result<TodoItem>.Fail(new Error("Forced error", ErrorType.Unexpected));
+        
         if (string.IsNullOrWhiteSpace(command.Title))
         {
             return Result<TodoItem>.Fail(new Error("Title is required", ErrorType.Validation));

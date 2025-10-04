@@ -11,6 +11,11 @@ public class InMemoryTodoService : ITodoService
     private readonly Dictionary<int, TodoItem> _todos = new();
     private int _nextId = 1;
 
+    public Task<Result<List<TodoItem>>> GetAllAsync(CancellationToken ct)
+    {
+        throw new NotImplementedException();
+    }
+
     public Task<Result<TodoItem>> GetAsync(int id, CancellationToken ct)
     {
         if (_todos.TryGetValue(id, out var item))

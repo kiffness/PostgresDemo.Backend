@@ -11,6 +11,14 @@ namespace PostgresDemo.Api.Controllers;
 [Route("api/[controller]")]
 public class TodoController(ITodoService todoService) : ControllerBase
 {
+    // Get api/todo
+    [HttpGet]
+    public async Task<IActionResult> Get(CancellationToken ct)
+    {
+        var result = await todoService.GetAllAsync(ct);
+        return result.ToActionResult(this);
+    }
+    
     // Get api/todo/{id}
     [HttpGet("{id:int}")]
     public async Task<IActionResult> Get(int id, CancellationToken ct)

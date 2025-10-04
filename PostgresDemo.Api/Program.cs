@@ -7,12 +7,19 @@ using PostgresDemo.Library.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..\");
-var envPath = Path.Combine(solutionRoot, ".env");
+// Compute path to the solution root (adjust depth as needed)
+var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..");
 
-Env.Load(envPath);
+// Build the database path — store it under your main solution folder
+var dbPath = Path.GetFullPath(Path.Combine(solutionRoot, "PostgresDemo", "todo.db"));
 
-var connectionString = Environment.GetEnvironmentVariable("POSTGRES_CONNECTION");
+// Use Sqlite connection string
+var connectionString = $"Data Source={dbPath}";
+
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+});
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -21,11 +28,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseSqlite(connectionString));
 
 builder.Services.AddScoped<ITodoService, EfTodoService>();
 
 var app = builder.Build();
+
+app.UseCors();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

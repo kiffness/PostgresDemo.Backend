@@ -5,6 +5,7 @@ namespace PostgresDemo.Library.Interfaces;
 
 public interface ITodoService
 {
+    Task<Result<List<TodoItem>>> GetAllAsync(CancellationToken ct);
     Task<Result<TodoItem>> GetAsync(int id, CancellationToken ct);
     Task<Result<TodoItem>> CreateAsync(CreateTodoCommand command, CancellationToken ct);
     Task<Result<TodoItem>> UpdateAsync(UpdateTodoCommand command, CancellationToken ct);
