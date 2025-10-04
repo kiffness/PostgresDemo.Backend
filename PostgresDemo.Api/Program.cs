@@ -38,7 +38,12 @@ var connectionString = $"Data Source={dbPath}";
 // Configure CORS
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
+    options.AddDefaultPolicy(policy => 
+        policy.WithOrigins(
+            "https://todoapi-hacrbqewfeana9dv.ukwest-01.azurewebsites.net",
+            "http://localhost:5173"
+        ).AllowAnyHeader().AllowAnyMethod()
+    );
 });
 
 // Add OpenAPI / Swagger
