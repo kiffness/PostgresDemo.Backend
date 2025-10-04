@@ -1,4 +1,3 @@
-using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using PostgresDemo.Api.Services;
 using PostgresDemo.Database.Data;
@@ -7,44 +6,71 @@ using PostgresDemo.Library.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Compute path to the solution root (adjust depth as needed)
-var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..");
+// Determine SQLite path from environment variable or fallback
+// Set environment variable: SQLITE_DB_PATH
+var dbPath = Environment.GetEnvironmentVariable("SQLITE_DB_PATH")!;
 
-// Build the database path — store it under your main solution folder
-var dbPath = Path.GetFullPath(Path.Combine(solutionRoot, "PostgresDemo", "todo.db"));
+if (string.IsNullOrEmpty(dbPath))
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        // Local fallback path
+        var solutionRoot = Path.Combine(AppContext.BaseDirectory, @"..\..\..\..");
+        dbPath = Path.GetFullPath(Path.Combine(solutionRoot, "PostgresDemo", "todo.db"));
+    }
+    else
+    {
+        // Azure App Service fallback path
+        if (OperatingSystem.IsWindows())
+        {
+            var home = Environment.GetEnvironmentVariable("HOME")!;
+            dbPath = Path.Combine(home, "site", "wwwroot", "todo.db");
+        }
+        else
+        {
+            dbPath = Path.Combine("/home/site/wwwroot", "todo.db");
+        }
+    }
+}
 
-// Use Sqlite connection string
 var connectionString = $"Data Source={dbPath}";
 
+// Configure CORS
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy => policy.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 });
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+// Add OpenAPI / Swagger
 builder.Services.AddOpenApi();
-
 builder.Services.AddControllers();
 
+// Register DbContext with SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(connectionString));
 
+// Register Todo service
 builder.Services.AddScoped<ITodoService, EfTodoService>();
 
 var app = builder.Build();
 
-app.UseCors();
+// Apply migrations automatically on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
-// Configure the HTTP request pipeline.
+// Middleware
+app.UseCors();
+app.UseHttpsRedirection();
+
+// Swagger only in development
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
 
 app.MapControllers();
-
-app.UseHttpsRedirection();
-
 
 app.Run();
