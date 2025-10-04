@@ -40,7 +40,7 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy => 
         policy.WithOrigins(
-            "https://todoapi-hacrbqewfeana9dv.ukwest-01.azurewebsites.net",
+            "https://mango-pond-0ce587403.2.azurestaticapps.net",
             "http://localhost:5173"
         ).AllowAnyHeader().AllowAnyMethod()
     );
